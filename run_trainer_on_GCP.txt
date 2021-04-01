@@ -1,0 +1,39 @@
+Linux:
+事前準備工作:
+gcloud auth login
+gcloud config set project ${PROJECT_ID}
+export JOB_NAME=food_classification_container_job_$(date+%Y_%m_%d_%H_%M_%S)
+export REGION=asia-east1
+
+發布job到GCP:
+gcloud ai-platform jobs submit training $JOB_NAME \  
+--scale-tier BASIC_GPU \  
+--region $REGION \  
+--master-image-uri $IMAGE_URI \  
+-- \  
+--batch_size=8
+
+發布到GCP 和config.yaml一起 (with hyperparameter)
+gcloud ai-platform jobs submit training $JOB_NAME \
+--scale-tier BASIC_GPU \
+--region $REGION \
+--master-image-uri $IMAGE_URI \
+--config config.yaml
+
+
+
+Windows:
+事前準備工作:
+gcloud auth login
+gcloud config set project ${PROJECT_ID}
+set JOB_NAME=food_classification_container_job_$(date+%Y_%m_%d_%H_%M_%S)
+set REGION=asia-east1
+
+
+發布job到GCP:
+gcloud ai-platform jobs submit training %JOB_NAME% ^
+--scale-tier BASIC_GPU ^
+--region %REGION% ^
+--master-image-uri %IMAGE_URI% ^
+-- ^
+--batch_size=8

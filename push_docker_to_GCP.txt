@@ -1,0 +1,23 @@
+
+Linux:
+export PROJECT_ID=$(gcloud config list project --format "value(core.project)")
+export IMAGE_REPO_NAME=tf_food_classification
+export IMAGE_TAG=tf_food_classification_gpu
+export IMAGE_URI=asia.gcr.io/$PROJECT_ID/$IMAGE_REPO_NAME:$IMAGE_TAG
+echo $IMAGE_URI
+docker build -f Dockerfile_gpu -t $IMAGE_URI ./
+
+gcloud auth configure-docker
+docker push $IMAGE_URI
+
+Windows:
+gcloud config list project --format "value(core.project)"
+set PROJECT_ID=
+set IMAGE_REPO_NAME=tf_food_classification
+set IMAGE_TAG=tf_food_classification_gpu
+set IMAGE_URI=asia.gcr.io/%PROJECT_ID%/%IMAGE_REPO_NAME%:%IMAGE_TAG%
+set IMAGE_URI
+docker build -f Dockerfile_gpu -t %IMAGE_URI% ./
+
+gcloud auth configure-docker
+docker push %IMAGE_URI%
