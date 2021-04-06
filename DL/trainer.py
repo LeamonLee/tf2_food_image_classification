@@ -20,7 +20,7 @@ from dataHandler import download_data_to_local_directory, upload_data_to_bucket
 print("Tensorflow is running on following devices : ")
 print(device_lib.list_local_devices())
 
-isOnGCP = False
+isOnGCP = True
 
 def build_model(nbr_classes):
 
