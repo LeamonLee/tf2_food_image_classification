@@ -1,0 +1,12 @@
+# Get current project name on GCP
+gcloud config get-value project
+
+# 剛創建好google cloud帳號後或剛下載好gcloud後，需要用此指令綁定帳號
+# 也可以用來查看當前active 的project
+gcloud init
+
+# 列出當前google cloud platform上有的project
+gcloud projects list
+
+# 設定當前active的project
+gcloud config set project [{Project_ID]

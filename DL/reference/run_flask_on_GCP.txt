@@ -1,0 +1,13 @@
+gcloud config get-value project
+
+set PROJECT_ID = 
+
+set IMAGE_URI=asia.gcr.io/%PROJECT_ID%/ai_portfolio_predictor_app
+
+set IMAGE_URI
+
+gcloud builds submit --tag $IMAGE_URI
+
+gcloud run deploy --image $IMAGE_URI --platform managed --memory 2.0G
+
+gcloud run services update [service_name] --memory 2.0G

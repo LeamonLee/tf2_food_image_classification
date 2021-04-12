@@ -1,0 +1,1 @@
+python trainer.py --bucket_name "tf2-food-bucket" --batch_size 2

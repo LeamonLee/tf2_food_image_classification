@@ -28,7 +28,7 @@ def build_model(nbr_classes):
 
     head_model = base_model.output
     head_model = Flatten()(head_model)
-    head_model = Dense(512)(head_model)
+    head_model = Dense(512, activation="relu")(head_model)
     head_model = Dropout(0.5)(head_model)
     head_model = Dense(nbr_classes, activation="softmax")(head_model)
 
@@ -126,7 +126,7 @@ def train(path_to_data, batch_size, epochs, learning_rate, models_bucket_name=""
 
     early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
-    path_to_save_model = './tmp'
+    path_to_save_model = './output'
     if not os.path.isdir(path_to_save_model):
         os.makedirs(path_to_save_model)
 
@@ -169,11 +169,10 @@ def train(path_to_data, batch_size, epochs, learning_rate, models_bucket_name=""
     loss = scores[0]
     print(f"loss for hyptertune = {loss}")
     
-    now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    zipped_folder_name = f'trained_model_{now}_loss_{loss}'
-    shutil.make_archive(zipped_folder_name, 'zip', '/usr/src/app/tmp')
-    
     if isOnGCP:
+        now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        zipped_folder_name = f'trained_model_{now}_loss_{loss}'
+        shutil.make_archive(zipped_folder_name, 'zip', '/usr/src/app/output')
         path_zipped_folder = '/usr/src/app/' + zipped_folder_name + '.zip'
         upload_data_to_bucket(models_bucket_name, path_zipped_folder, zipped_folder_name)
     
@@ -183,35 +182,46 @@ def train(path_to_data, batch_size, epochs, learning_rate, models_bucket_name=""
 
 if __name__ == "__main__":
 
-    isDummy = False
-    isDownloadDataset = True 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--bucket_name", type=str, help="Bucket name on google cloud storage",
+                        default="")
+    parser.add_argument("--models_bucket_name", type=str, help="Bucket name on google cloud storage for saving trained models",
+                        default="image-classification-food-model-bucket")
+    parser.add_argument("--batch_size", type=int, help="Batch size used by the deep learning model", 
+                        default=2)
+    parser.add_argument("--epochs", type=int, help="Epochs used by the deep learning model", 
+                        default=20)
+    parser.add_argument("--learning_rate", type=float, help="Batch size used by the deep learning model", 
+                        default=1e-5)
+    parser.add_argument('--isOnGCP', help='Is it running on GCP or Local Machine, default: False',
+						action='store_true')
+    parser.add_argument('--isDownloadDataset', help='Do you need to download dataset from GCP bucket, default: False',
+						action='store_true')
+    parser.add_argument('--isDummy', help='Do you want to run training with dummy dataset, default: False',
+						action='store_true')
+    args = parser.parse_args()
 
     pathDataSet = "./dataset"
     bucketName = "image-recognition-food-data-bucket"
-    if isDummy:
+    if args.isDummy:
         path_to_data = pathDataSet + '/dummy'
         bucketName = "image-recognition-dummy-data-bucket"
     else:
         path_to_data = pathDataSet
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--bucket_name", type=str, help="Bucket name on google cloud storage",
-                        default=bucketName)
-    
-    parser.add_argument("--models_bucket_name", type=str, help="Bucket name on google cloud storage for saving trained models",
-                        default="image-classification-food-model-bucket")
-    parser.add_argument("--batch_size", type=int, help="Batch size used by the deep learning model", 
-                        default=2)
-    parser.add_argument("--learning_rate", type=float, help="Batch size used by the deep learning model", 
-                        default=1e-5)
-    args = parser.parse_args() 
+    if args.bucket_name:
+      bucketName = args.bucket_name
 
-    if isDownloadDataset:
+    if args.isDownloadDataset:
         print("Downloading of data started ...")
-        download_data_to_local_directory(args.bucket_name, pathDataSet)
+        download_data_to_local_directory(bucketName, pathDataSet)
         print("Download finished!")
 
+    isOnGCP = args.isOnGCP
+
     if isOnGCP:
-        train(path_to_data, args.batch_size, 20, args.learning_rate, args.models_bucket_name)
+        train(path_to_data, args.batch_size, args.epochs, args.learning_rate, args.models_bucket_name)
     else:
-        train(path_to_data, args.batch_size, 20, args.learning_rate)
+        train(path_to_data, args.batch_size, args.epochs, args.learning_rate)
+    
+    print("Training Finished!")
